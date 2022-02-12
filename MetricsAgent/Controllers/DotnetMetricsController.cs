@@ -1,10 +1,16 @@
-﻿using MetricsAgent.DAL.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using AutoMapper;
+using MetricsAgent.DAL.Interfaces;
+using MetricsAgent.DAL.Models;
+using MetricsAgent.DAL.Requests.Models;
+using MetricsAgent.DAL.Responses;
+using MetricsAgent.DAL.Responses.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Data.SQLite;
 
-namespace MetricsManager.Controllers
+namespace MetricsAgent.Controllers
 {
     [Route("api/metrics/dotnet")]
     [ApiController]
@@ -13,32 +19,77 @@ namespace MetricsManager.Controllers
 
         private readonly ILogger<DotnetMetricsController> _logger;
         private IDotnetMetricsRepository _repository;
+        private readonly IMapper _mapper;
 
-        public DotnetMetricsController(ILogger<DotnetMetricsController> logger, IDotnetMetricsRepository repository)
+        public DotnetMetricsController(ILogger<DotnetMetricsController> logger, IDotnetMetricsRepository repository, IMapper mapper)
         {
             _logger = logger;
-            _logger.LogDebug(1, "NLog встроен в DotnetMetricsController");
             _repository = repository;
+            _mapper = mapper;
         }
+
+        
+        
+        [HttpPost("create")]
+        public IActionResult Create([FromBody] DotnetMetricCreateRequest request)
+        {
+            _repository.Create(new DotnetMetric
+            {
+                Time =  request.Time,
+                Value = request.Value
+            });
+            return Ok();
+        }
+
+        
+
+        [HttpPost("delete")]
+        public IActionResult Delete(int id)
+        {
+            _logger.LogDebug($"Контроллер Delete: delete id - {id} ");
+            _repository.Delete(id);
+            return Ok();
+        }
+ 
+        
+        
+        [HttpPost("update")]
+        public IActionResult Update(int id)
+        {
+            return Ok();
+        }
+        
+        
+
+        [HttpGet("get-all")]
+        public IActionResult GetAll()
+        {
+            var metrics = _repository.GetAll();
+            var response = new AllDotnetMetricsResponse()
+            {
+                Metrics = new List<DotnetMetricDto>()
+            };
+            foreach (var metric in metrics)
+            {
+                response.Metrics.Add(_mapper.Map<DotnetMetricDto>(metric));
+            }
+            return Ok(response);
+        }
+        
+        
+        
+        [HttpGet("get-by-id")]
+        public IActionResult GetById()
+        {
+            return Ok();
+        }
+
+
 
         [HttpGet("from/{fromTime}/to/{toTime}")]
         public IActionResult GetMetrics([FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
             return Ok();
-        }
-
-        [HttpGet("sql-test")]
-        public IActionResult TryToSqlLite()
-        {
-            string cs = "Data Source=:memory:";
-            string stm = "SELECT SQLITE_VERSION()";
-            using (var con = new SQLiteConnection(cs))
-            {
-                con.Open();
-                using var cmd = new SQLiteCommand(stm, con);
-                string version = cmd.ExecuteScalar().ToString();
-                return Ok(version);
-            }
         }
     }
 }

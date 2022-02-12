@@ -1,43 +1,68 @@
-﻿using MetricsAgent.DAL.Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.SQLite;
+using AutoMapper;
+using Dapper;
+using MetricsAgent.DAL.Interfaces;
 using MetricsAgent.DAL.Models;
 using MetricsAgent.DAL.Requests.Models;
+using MetricsAgent.DAL.Responses;
 using MetricsAgent.DAL.Responses.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Data.SQLite;
 
-namespace MetricsManager.Controllers
+namespace MetricsAgent.Controllers
 {
     [Route("api/metrics/cpu")]
     [ApiController]
     public class CpuMetricsController : ControllerBase
     {
+        
         private readonly ILogger<CpuMetricsController> _logger;
         private ICpuMetricsRepository _repository;
+        private readonly IMapper _mapper;
 
-        public CpuMetricsController(ILogger<CpuMetricsController> logger, ICpuMetricsRepository repository)
+        public CpuMetricsController(ILogger<CpuMetricsController> logger, ICpuMetricsRepository repository, IMapper mapper)
         {
             _logger = logger;
-            _logger.LogDebug(1, "NLog встроен в CpuMetricsController");
             _repository = repository;
+            _mapper = mapper;
         }
 
+        
+        
         [HttpPost("create")]
         public IActionResult Create([FromBody] CpuMetricCreateRequest request)
         {
-            _logger.LogInformation($"Контроллер create {request}");
             _repository.Create(new CpuMetric
             {
-                Time = request.Time,
+                Time =  request.Time,
                 Value = request.Value
             });
             return Ok();
         }
 
+        
 
-        [HttpGet("all")]
+        [HttpPost("delete")]
+        public IActionResult Delete(int id)
+        {
+            _logger.LogDebug($"Контроллер Delete: delete id - {id} ");
+            _repository.Delete(id);
+            return Ok();
+        }
+ 
+        
+        
+        [HttpPost("update")]
+        public IActionResult Update(int id)
+        {
+            return Ok();
+        }
+        
+        
+
+        [HttpGet("get-all")]
         public IActionResult GetAll()
         {
             var metrics = _repository.GetAll();
@@ -47,15 +72,17 @@ namespace MetricsManager.Controllers
             };
             foreach (var metric in metrics)
             {
-                response.Metrics.Add(new CpuMetricDto
-                {
-                    Time = metric.Time,
-                    Value =
-                metric.Value,
-                    Id = metric.Id
-                });
+                response.Metrics.Add(_mapper.Map<CpuMetricDto>(metric));
             }
             return Ok(response);
+        }
+        
+        
+        
+        [HttpGet("get-by-id")]
+        public IActionResult GetById()
+        {
+            return Ok();
         }
 
 
@@ -65,27 +92,6 @@ namespace MetricsManager.Controllers
         {
             return Ok();
         }
-
-        [HttpGet("test")]
-        public IActionResult Test()
-        {
-            _logger.LogInformation("Контроллер Test");
-            return Ok();
-        }
-
-        [HttpGet("sql-test")]
-        public IActionResult TryToSqlLite()
-        {
-            string cs = "Data Source=:memory:";
-            string stm = "SELECT SQLITE_VERSION()";
-            using (var con = new SQLiteConnection(cs))
-            {
-                con.Open();
-                using var cmd = new SQLiteCommand(stm, con);
-                string version = cmd.ExecuteScalar().ToString();
-                return Ok(version);
-            }
-        }
-
+        
     }
 }

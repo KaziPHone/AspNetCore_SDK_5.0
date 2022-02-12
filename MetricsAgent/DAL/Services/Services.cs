@@ -1,8 +1,10 @@
-﻿using MetricsAgent.DAL.Interfaces;
+﻿using AutoMapper;
+using MetricsAgent.DAL.Interfaces;
 using MetricsAgent.DAL.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.Data.SQLite;
+using MetricsAgent.DAL.Handlers;
 
 namespace MetricsAgent.DAL.Services
 {
@@ -22,6 +24,10 @@ namespace MetricsAgent.DAL.Services
             services.AddSingleton<IHddMetricsRepository, HddMetricsRepository>();
             services.AddSingleton<IRamMetricsRepository, RamMetricsRepository>();
             services.AddSingleton<NetworkMetricsRepository, NetworkMetricsRepository>();
+
+            var mapperConfiguration = new MapperConfiguration(mp => mp.AddProfile(new MapperProfile()));
+            var mapper = mapperConfiguration.CreateMapper();
+            services.AddSingleton(mapper);
         }
     }
 }
