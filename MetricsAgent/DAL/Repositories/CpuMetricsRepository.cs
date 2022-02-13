@@ -14,7 +14,7 @@ namespace MetricsAgent.DAL.Repositories
     {
         private readonly string _connectionString;
 
-        public CpuMetricsRepository(ConnectionDB connectionDb)
+        public CpuMetricsRepository(ConnectionDb connectionDb)
         {
             _connectionString = connectionDb.ConnectionStringSQLLite();
             SqlMapper.AddTypeHandler(new TimeSpanHandler());
@@ -79,5 +79,16 @@ namespace MetricsAgent.DAL.Repositories
                 });
             }
         }
+
+        public IList<CpuMetric> GetAllBetweenTime(TimeSpan fromTime, TimeSpan toTime)
+        {
+            var fromT = fromTime.TotalSeconds;
+            var tot = toTime.TotalSeconds;
+            using var connection = new SQLiteConnection(_connectionString);
+            {
+                return connection.Query<CpuMetric>("SELECT id, value, time FROM cpumetrics WHERE time>@fromT AND time<@toT").ToList();
+            }
+        }
+
     }
 }

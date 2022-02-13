@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System;
+using Dapper;
 using MetricsAgent.DAL.Interfaces;
 using MetricsAgent.DAL.Models;
 using MetricsAgent.DAL.Services;
@@ -12,7 +13,7 @@ namespace MetricsAgent.DAL.Repositories
     {
         private readonly string _connectionString;
 
-        public NetworkMetricsRepository(ConnectionDB connectionDb)
+        public NetworkMetricsRepository(ConnectionDb connectionDb)
         {
             _connectionString = connectionDb.ConnectionStringSQLLite();
         }
@@ -61,6 +62,16 @@ namespace MetricsAgent.DAL.Repositories
             using var connection = new SQLiteConnection(_connectionString);
             {
                 return connection.Query<NetworkMetric>("SELECT Id, Time, Value FROM networkmetrics").ToList();
+            }
+        }
+
+        public IList<NetworkMetric> GetAllBetweenTime(TimeSpan fromTime, TimeSpan toTime)
+        {
+            var fromT = fromTime.TotalSeconds;
+            var tot = toTime.TotalSeconds;
+            using var connection = new SQLiteConnection(_connectionString);
+            {
+                return connection.Query<NetworkMetric>("SELECT id, value, time FROM networkmetrics WHERE time>@fromT AND time<@toT").ToList();
             }
         }
 

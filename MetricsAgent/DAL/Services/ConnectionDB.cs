@@ -1,6 +1,6 @@
 ﻿namespace MetricsAgent.DAL.Services
 {
-    public class ConnectionDB
+    public class ConnectionDb
     {
         public string ConnectionString { get; set; }
 
