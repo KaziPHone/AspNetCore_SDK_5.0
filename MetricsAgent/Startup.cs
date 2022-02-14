@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FluentMigrator.Runner;
 
 namespace MetricsAgent
 {
@@ -31,7 +32,7 @@ namespace MetricsAgent
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IMigrationRunner migrationRunner)
         {
             
             if (env.IsDevelopment())
@@ -51,6 +52,8 @@ namespace MetricsAgent
             {
                 endpoints.MapControllers();
             });
+            // запускаем миграции
+            migrationRunner.MigrateUp();
         }
     }
 }
