@@ -364,3 +364,5 @@ FodyWeavers.xsd
 *.db
 /.idea/.idea.AspNetCore/.idea
 /test
+.idea/config/applicationhost.config
+.gitignore

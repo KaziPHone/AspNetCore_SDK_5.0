@@ -82,11 +82,10 @@ namespace MetricsAgent.DAL.Repositories
 
         public IList<CpuMetric> GetAllBetweenTime(TimeSpan fromTime, TimeSpan toTime)
         {
-            var fromT = fromTime.TotalSeconds;
-            var tot = toTime.TotalSeconds;
             using var connection = new SQLiteConnection(_connectionString);
             {
-                return connection.Query<CpuMetric>("SELECT id, value, time FROM cpumetrics WHERE time>@fromT AND time<@toT").ToList();
+                var query = String.Format("SELECT id, value, time FROM cpumetrics WHERE time>{0} AND time<{1}", fromTime.TotalSeconds, toTime.TotalSeconds);
+                return connection.Query<CpuMetric>(query).ToList();
             }
         }
 

@@ -67,11 +67,10 @@ namespace MetricsAgent.DAL.Repositories
 
         public IList<HddMetric> GetAllBetweenTime(TimeSpan fromTime, TimeSpan toTime)
         {
-            var fromT = fromTime.TotalSeconds;
-            var tot = toTime.TotalSeconds;
             using var connection = new SQLiteConnection(_connectionString);
             {
-                return connection.Query<HddMetric>("SELECT id, value, time FROM hddmetrics WHERE time>@fromT AND time<@toT").ToList();
+                var query = String.Format("SELECT id, value, time FROM cpumetrics WHERE time>{0} AND time<{1}", fromTime.TotalSeconds, toTime.TotalSeconds);
+                return connection.Query<HddMetric>(query).ToList();
             }
         }
 

@@ -67,11 +67,10 @@ namespace MetricsAgent.DAL.Repositories
 
         public IList<RamMetric> GetAllBetweenTime(TimeSpan fromTime, TimeSpan toTime)
         {
-            var fromT = fromTime.TotalSeconds;
-            var tot = toTime.TotalSeconds;
             using var connection = new SQLiteConnection(_connectionString);
             {
-                return connection.Query<RamMetric>("SELECT id, value, time FROM rammetrics WHERE time>@fromT AND time<@toT").ToList();
+                var query = String.Format("SELECT id, value, time FROM cpumetrics WHERE time>{0} AND time<{1}", fromTime.TotalSeconds, toTime.TotalSeconds);
+                return connection.Query<RamMetric>(query).ToList();
             }
         }
 

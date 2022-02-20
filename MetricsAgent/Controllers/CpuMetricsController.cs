@@ -41,6 +41,14 @@ namespace MetricsAgent.Controllers
             });
             return Ok();
         }
+        
+        
+        [HttpPost("test/{request}")]
+        public IActionResult Test([FromRoute] string request)
+        {
+            return Ok(request);
+        }
+        
 
         
 
